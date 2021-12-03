@@ -1,8 +1,12 @@
+#![allow(dead_code, unused_imports)]
+
 use std::io;
 use std::fs;
 use std::env;
+mod chunk;
 
-#[allow(dead_code)]
+
+// #[allow(dead_code)]
 #[derive(Debug)]
 #[derive(PartialEq)]
 enum TokenType {
@@ -106,13 +110,17 @@ fn run_file(path: String) {
 }
 
 fn main() {
-    let args = env::args();
-    let (n, _) = args.size_hint();
-    match n {
-        1 => run_prompt(),
-        2 => run_file(args.last().unwrap()),
-        _ => println!("Usage: ./exe [Filename]"),
-    }
+    // let args = env::args();
+    // let (n, _) = args.size_hint();
+    // match n {
+    //     1 => run_prompt(),
+    //     2 => run_file(args.last().unwrap()),
+    //     _ => println!("Usage: ./exe [Filename]"),
+    // }
+
+    let mut c = chunk::Chunk::create_chunk();
+    c.write_chunk(chunk::OpCode::OpReturn);
+    c.disassemble_chunk("ch1".to_string());
 
 }
 
