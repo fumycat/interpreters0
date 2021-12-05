@@ -1,33 +1,60 @@
 #![allow(dead_code, unused_imports)]
 
-use std::io;
-use std::fs;
 use std::env;
+use std::fs;
+use std::io;
 mod chunk;
 
-
 // #[allow(dead_code)]
-#[derive(Debug)]
-#[derive(PartialEq)]
+#[derive(Debug, PartialEq)]
 enum TokenType {
-  // Single-character tokens.
-  LeftParen, RightParen, LeftBrace, RightBrace,
-  Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
+    // Single-character tokens.
+    LeftParen,
+    RightParen,
+    LeftBrace,
+    RightBrace,
+    Comma,
+    Dot,
+    Minus,
+    Plus,
+    Semicolon,
+    Slash,
+    Star,
 
-  // One or two character tokens.
-  Bang, BangEqual,
-  Equal, EqualEqual,
-  Greater, GreaterEqual,
-  Less, LessEqual,
+    // One or two character tokens.
+    Bang,
+    BangEqual,
+    Equal,
+    EqualEqual,
+    Greater,
+    GreaterEqual,
+    Less,
+    LessEqual,
 
-  // Literals.
-  Identifier(String), Str(String), Number(i32),
+    // Literals.
+    Identifier(String),
+    Str(String),
+    Number(i32),
 
-  // Keywords.
-  And, Class, Else, False, Fun, For, If, Nil, Or,
-  Print, Return, Super, This, True, Var, While,
+    // Keywords.
+    And,
+    Class,
+    Else,
+    False,
+    Fun,
+    For,
+    If,
+    Nil,
+    Or,
+    Print,
+    Return,
+    Super,
+    This,
+    True,
+    Var,
+    While,
 
-  Eof
+    Eof,
 }
 
 fn scan(text: String) -> Vec<TokenType> {
@@ -48,27 +75,41 @@ fn scan(text: String) -> Vec<TokenType> {
             '/' => match iter.peek() {
                 Some('/') => {
                     while let Some(slash_c) = iter.next() {
-                        if slash_c == '\n' {break};
-                    };
+                        if slash_c == '\n' {
+                            break;
+                        };
+                    }
                     None
-                },
+                }
                 _ => Some(TokenType::Slash),
             },
 
             '!' => match iter.peek() {
-                Some('=') => { iter.next(); Some(TokenType::BangEqual) },
+                Some('=') => {
+                    iter.next();
+                    Some(TokenType::BangEqual)
+                }
                 _ => Some(TokenType::Bang),
             },
             '=' => match iter.peek() {
-                Some('=') => { iter.next(); Some(TokenType::EqualEqual) },
+                Some('=') => {
+                    iter.next();
+                    Some(TokenType::EqualEqual)
+                }
                 _ => Some(TokenType::Equal),
             },
             '>' => match iter.peek() {
-                Some('=') => { iter.next(); Some(TokenType::GreaterEqual) },
+                Some('=') => {
+                    iter.next();
+                    Some(TokenType::GreaterEqual)
+                }
                 _ => Some(TokenType::Bang),
             },
             '<' => match iter.peek() {
-                Some('=') => { iter.next(); Some(TokenType::LessEqual) },
+                Some('=') => {
+                    iter.next();
+                    Some(TokenType::LessEqual)
+                }
                 _ => Some(TokenType::Bang),
             },
             '\n' => None,
@@ -84,7 +125,6 @@ fn scan(text: String) -> Vec<TokenType> {
             tokens.push(tok)
         }
     }
-    
     tokens
 }
 
@@ -95,17 +135,13 @@ fn run(line: String) {
 fn run_prompt() {
     let mut l = String::new();
 
-    io::stdin()
-        .read_line(&mut l)
-        .expect("Failed to read line");
-    
+    io::stdin().read_line(&mut l).expect("Failed to read line");
     let tokens = scan(l);
     println!("{:?}", tokens)
 }
 
 fn run_file(path: String) {
-    let content = fs::read_to_string(path)
-        .expect("Error while reading file");
+    let content = fs::read_to_string(path).expect("Error while reading file");
     run(content)
 }
 
@@ -119,9 +155,10 @@ fn main() {
     // }
 
     let mut c = chunk::Chunk::create_chunk();
+    let constant_index: usize = c.add_constant(1.5);
+    c.write_chunk(chunk::OpCode::OpConstant(constant_index));
     c.write_chunk(chunk::OpCode::OpReturn);
-    c.disassemble_chunk("ch1".to_string());
-
+    c.disassemble_chunk("chunk1".to_string());
 }
 
 #[cfg(test)]
@@ -135,13 +172,21 @@ mod tests {
 
     #[test]
     fn test_scan_comment_no_newline() {
-        assert_eq!(vec!(TokenType::Dot, TokenType::Equal), scan(".= // =hi".to_string()));
+        assert_eq!(
+            vec!(TokenType::Dot, TokenType::Equal),
+            scan(".= // =hi".to_string())
+        );
     }
 
     #[test]
     fn test_scan_comment_newline_text() {
         assert_eq!(
-            vec!(TokenType::Dot, TokenType::Dot, TokenType::Comma, TokenType::Comma),
+            vec!(
+                TokenType::Dot,
+                TokenType::Dot,
+                TokenType::Comma,
+                TokenType::Comma
+            ),
             scan(".. // yes\n,, // new".to_string())
         );
     }
