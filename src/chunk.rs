@@ -4,7 +4,7 @@ pub enum OpCode {
 }
 
 pub struct Chunk {
-    code: Vec<OpCode>,
+    pub code: Vec<(u32, OpCode)>,
     constants: ValueArray,
 }
 
@@ -21,8 +21,9 @@ impl Chunk {
             constants: ValueArray::create_value_array(),
         }
     }
-    pub fn write_chunk(&mut self, opc: OpCode) {
-        self.code.push(opc)
+
+    pub fn write_chunk(&mut self, opc: OpCode, l: u32) {
+        self.code.push((l, opc))
     }
 
     pub fn clear_chunk(&mut self) {
@@ -42,6 +43,10 @@ impl Chunk {
     pub fn add_constant(&mut self, v: Value) -> usize {
         self.constants.write_value(v);
         self.constants.values.len() - 1
+    }
+
+    pub fn read_constant(&self, index: usize) -> f64 {
+        self.constants.values[index]
     }
 }
 
@@ -65,8 +70,8 @@ impl ValueArray {
 }
 
 fn disassemble_instruction(chunk: &Chunk, offset: usize) -> usize {
-    print!("{} ", offset);
-    let opc: &OpCode = &chunk.code[offset];
+    let (line, opc) = &chunk.code[offset];
+    print!("{:4} {:4} ", offset, line);
     match opc {
         OpCode::OpReturn => simple_instruction("OP_RETURN".to_string(), offset),
         OpCode::OpConstant(constant_index) => {

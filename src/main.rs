@@ -4,6 +4,7 @@ use std::env;
 use std::fs;
 use std::io;
 mod chunk;
+mod vm;
 
 // #[allow(dead_code)]
 #[derive(Debug, PartialEq)]
@@ -156,9 +157,14 @@ fn main() {
 
     let mut c = chunk::Chunk::create_chunk();
     let constant_index: usize = c.add_constant(1.5);
-    c.write_chunk(chunk::OpCode::OpConstant(constant_index));
-    c.write_chunk(chunk::OpCode::OpReturn);
-    c.disassemble_chunk("chunk1".to_string());
+    c.write_chunk(chunk::OpCode::OpConstant(constant_index), 0);
+    c.write_chunk(chunk::OpCode::OpReturn, 1);
+    // c.disassemble_chunk("chunk1".to_string());
+
+    let vm = vm::VM::init_vm(&c);
+    vm.interpret();
+    
+    c.clear_chunk()
 }
 
 #[cfg(test)]
